@@ -1,0 +1,52 @@
+digraph MedLab {
+  rankdir=LR;
+  fontname="Helvetica"; nodesep=0.5; ranksep=0.8;
+  node [fontname="Helvetica", fontsize=11, shape=box, style="rounded,filled", fillcolor="#FFFFFF", color="#444444"];
+  edge [fontname="Helvetica", fontsize=9, color="#555555"];
+
+  subgraph cluster_clients {
+    label="Клієнти"; style="rounded,filled"; fillcolor="#E8F1FB"; color="#8AB4E8";
+    patient [label="Пацієнти\n(Web / Mobile)"];
+    labs    [label="Лабораторії\n(LIS-системи, API)"];
+  }
+
+  lb [label="Load Balancer\n(Nginx)", fillcolor="#FFF4D6", style="rounded,filled,dashed"];
+
+  subgraph cluster_backend {
+    label="Backend (stateless)"; style="rounded,filled"; fillcolor="#E9F7EC"; color="#7CC28F";
+    api1 [label="FastAPI\ninstance 1"];
+    api2 [label="FastAPI\ninstance N", style="rounded,filled,dashed"];
+  }
+
+  cache [label="Redis\n(кеш статусів, rate-limit)", fillcolor="#FFF4D6", style="rounded,filled,dashed"];
+  mq    [label="Черга повідомлень\n(RabbitMQ / Redis Streams)", fillcolor="#FFF4D6", style="rounded,filled,dashed"];
+
+  subgraph cluster_workers {
+    label="Асинхронна обробка"; style="rounded,filled"; fillcolor="#F6EAF8"; color="#C08BD0";
+    w1 [label="PDF Worker 1", style="rounded,filled,dashed"];
+    w2 [label="PDF Worker M", style="rounded,filled,dashed"];
+  }
+
+  subgraph cluster_data {
+    label="Сховища даних"; style="rounded,filled"; fillcolor="#FDEDEC"; color="#E59A94";
+    pg  [label="MySQL\n(primary)", shape=cylinder];
+    pgr [label="MySQL\n(read replica)", shape=cylinder, style="filled,dashed"];
+    s3  [label="Object Storage\n(S3 / MinIO): PDF-звіти", shape=cylinder, style="filled,dashed"];
+  }
+
+  patient -> api1 [label="HTTPS (зараз напряму)"];
+  labs -> api1 [label="HTTPS (імпорт результатів)"];
+  lb -> api1 [style=dashed]; lb -> api2 [style=dashed];
+  api1 -> cache [label="read", style=dashed];
+  api1 -> pg [label="write"];
+  api1 -> pgr [label="read", style=dashed];
+  api1 -> mq [label="ReportJob", style=dashed];
+  mq -> w1 [style=dashed]; mq -> w2 [style=dashed];
+  w1 -> pg [label="статус", style=dashed]; w1 -> s3 [label="PDF", style=dashed];
+  api1 -> s3 [label="pre-signed URL", style=dashed];
+  pg -> pgr [label="replication", style=dashed, dir=none];
+
+  legend [shape=none, style="", label=<<table border="0" cellborder="1" cellspacing="0" cellpadding="4">
+    <tr><td align="left">Суцільна — реалізовано в каркасі ЛР №1 (клієнти, FastAPI, MySQL)</td></tr>
+    <tr><td align="left">Пунктир — заплановано (балансування, кеш, черга, воркери, репліки, S3)</td></tr></table>>];
+}
