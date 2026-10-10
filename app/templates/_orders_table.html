@@ -1,0 +1,15 @@
+<table>
+  <tr><th>№</th><th>Штрихкод</th><th>Пацієнт</th><th>Аналізи</th><th>Статус</th><th></th></tr>
+  {% for o in orders %}
+  <tr>
+    <td>{{ o.id }}</td>
+    <td>{{ o.barcode }}</td>
+    <td>{{ o.patient_name }}</td>
+    <td>{{ o.test_codes | join(", ") }}</td>
+    <td>{{ o.status | status_label }}</td>
+    <td>{% if o.status == "completed" %}<a href="/api/v1/orders/{{ o.id }}/pdf" target="_blank">PDF</a>{% endif %}</td>
+  </tr>
+  {% else %}
+  <tr><td colspan="6">Замовлень поки немає</td></tr>
+  {% endfor %}
+</table>

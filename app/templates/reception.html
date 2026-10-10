@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Рецепція{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Рецепція</h2>
+  <h3>Новий пацієнт (без особистого кабінету)</h3>
+  <form method="post" action="/reception/patients">
+    <label>ПІБ <input type="text" name="full_name" required minlength="2"></label>
+    <label>Дата народження <input type="date" name="birth_date"></label>
+    <label>Телефон <input type="text" name="phone"></label>
+    <button type="submit">Додати пацієнта</button>
+  </form>
+</div>
+<div class="card">
+  <h3>Нове замовлення на аналізи</h3>
+  <form method="post" action="/reception/orders">
+    <label>Пацієнт
+      <select name="patient_id" required>
+        {% for p in patients %}
+        <option value="{{ p.id }}">{{ p.full_name }}{% if p.birth_date %} ({{ p.birth_date }}){% endif %}</option>
+        {% endfor %}
+      </select>
+    </label>
+    <p>Аналізи:</p>
+    {% for code, t in catalog.items() %}
+    <label><input type="checkbox" name="test_codes" value="{{ code }}" style="width:auto"> {{ t.name }} ({{ t.unit }})</label>
+    {% endfor %}
+    <button type="submit">Створити замовлення</button>
+  </form>
+</div>
+<div class="card">
+  <h3>Останні замовлення</h3>
+  {% include "_orders_table.html" %}
+</div>
+{% endblock %}

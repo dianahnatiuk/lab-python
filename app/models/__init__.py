@@ -1,17 +1,13 @@
-from app.models.entities import (
-    Laboratory,
-    LabOrder,
-    Patient,
-    ReportJob,
-    ReportStatus,
-    TestResult,
-)
+"""Моделі бази даних."""
+
+from app.models.lab import Order, OrderStatus, OrderStatusHistory, Patient
+from app.models.user import Role, User
 
 __all__ = [
-    "Laboratory",
-    "LabOrder",
+    "Order",
+    "OrderStatus",
+    "OrderStatusHistory",
     "Patient",
-    "ReportJob",
-    "ReportStatus",
-    "TestResult",
+    "Role",
+    "User",
 ]

@@ -1,10 +1,7 @@
 """Мінімальний HTML-інтерфейс: вхід, реєстрація, сторінки-заглушки за ролями."""
 
-from pathlib import Path
-
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import RedirectResponse
-from fastapi.templating import Jinja2Templates
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,8 +15,8 @@ from app.core.security import create_access_token
 from app.db.session import get_db
 from app.models.user import Role, User
 from app.services.auth import EmailTakenError, authenticate, create_user
+from app.web.templating import templates
 
-templates = Jinja2Templates(directory=str(Path(__file__).resolve().parent.parent / "templates"))
 router = APIRouter(include_in_schema=False)
 
 HOME = {
@@ -29,26 +26,6 @@ HOME = {
     Role.LAB_TECH.value: "/lab",
     Role.ADMIN.value: "/admin",
 }
-
-STUBS = {
-    "/patient": (Role.PATIENT, "Кабінет пацієнта", "Тут будуть ваші замовлення та PDF-результати аналізів."),
-    "/reception": (Role.RECEPTIONIST, "Рецепція", "Тут буде реєстрація пацієнтів і створення замовлень на аналізи."),
-    "/nurse": (Role.NURSE, "Процедурний кабінет", "Тут буде відмітка про забір біоматеріалу."),
-    "/lab": (Role.LAB_TECH, "Лабораторія", "Тут буде прийом зразків і внесення результатів."),
-}
-
-
-def _register_stub(path: str, role: Role, title: str, text: str) -> None:
-    @router.get(path, name=f"home_{role.value}")
-    async def page(request: Request, user: User = Depends(require_role(role))):
-        return templates.TemplateResponse(
-            request, "home.html", {"user": user, "title": title, "text": text}
-        )
-
-
-for _path, (_role, _title, _text) in STUBS.items():
-    _register_stub(_path, _role, _title, _text)
-
 
 def _login_redirect(user: User) -> RedirectResponse:
     response = RedirectResponse(HOME[user.role], status_code=303)

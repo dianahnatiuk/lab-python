@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Кабінет пацієнта{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Кабінет пацієнта</h2>
+  <p>Вітаємо, {{ user.full_name }}! Тут ваші замовлення. Коли результат готовий, з'явиться посилання на PDF.</p>
+  {% include "_orders_table.html" %}
+</div>
+{% endblock %}

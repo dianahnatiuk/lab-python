@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Лабораторія{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Лабораторія</h2>
+  <h3>Очікують прийому (матеріал забрано)</h3>
+  <table>
+    <tr><th>№</th><th>Штрихкод</th><th>Пацієнт</th><th>Аналізи</th><th></th></tr>
+    {% for o in collected %}
+    <tr>
+      <td>{{ o.id }}</td><td>{{ o.barcode }}</td><td>{{ o.patient_name }}</td>
+      <td>{{ o.test_codes | join(", ") }}</td>
+      <td><form method="post" action="/lab/orders/{{ o.id }}/receive"><button type="submit">Прийняти в лабораторію</button></form></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5">Порожньо</td></tr>
+    {% endfor %}
+  </table>
+</div>
+<div class="card">
+  <h3>В роботі (потрібно внести результати)</h3>
+  <table>
+    <tr><th>№</th><th>Штрихкод</th><th>Пацієнт</th><th>Аналізи</th><th></th></tr>
+    {% for o in in_lab %}
+    <tr>
+      <td>{{ o.id }}</td><td>{{ o.barcode }}</td><td>{{ o.patient_name }}</td>
+      <td>{{ o.test_codes | join(", ") }}</td>
+      <td><a href="/lab/orders/{{ o.id }}/results">Внести результати</a></td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5">Порожньо</td></tr>
+    {% endfor %}
+  </table>
+</div>
+{% endblock %}

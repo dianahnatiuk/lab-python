@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import get_settings
 from app.core.security import hash_password, verify_password
+from app.models.lab import Patient
 from app.models.user import Role, User
 
 # Щоб час відповіді не видавав, чи існує такий email
@@ -46,6 +47,10 @@ async def create_user(
     )
     db.add(user)
     try:
+        await db.flush()
+        if role == Role.PATIENT:
+            # Картка пацієнта створюється разом з акаунтом
+            db.add(Patient(user_id=user.id, full_name=user.full_name))
         await db.commit()
     except IntegrityError:
         await db.rollback()
@@ -64,3 +69,15 @@ async def ensure_seed_admin(db: AsyncSession) -> None:
         password=settings.admin_password,
         role=Role.ADMIN,
     )
+
+
+async def backfill_patients(db: AsyncSession) -> None:
+    """Створює картки для користувачів-пацієнтів, зареєстрованих до появи таблиці patients."""
+    stmt = (
+        select(User)
+        .outerjoin(Patient, Patient.user_id == User.id)
+        .where(User.role == Role.PATIENT.value, Patient.id.is_(None))
+    )
+    for user in await db.scalars(stmt):
+        db.add(Patient(user_id=user.id, full_name=user.full_name))
+    await db.commit()
