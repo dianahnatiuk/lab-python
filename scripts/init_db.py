@@ -1,10 +1,10 @@
-"""Тимчасове створення таблиць (у наступних роботах замінимо на Alembic)."""
+"""Ручне створення таблиць (застосунок робить це сам при старті)."""
 
 import asyncio
 
 from app.db.base import Base
 from app.db.session import engine
-from app.models import entities  # noqa: F401  (реєстрація моделей)
+from app.models import user  # noqa: F401  (реєстрація моделей)
 
 
 async def main() -> None:

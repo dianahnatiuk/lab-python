@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Вхід{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Вхід</h2>
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+  <form method="post" action="/login">
+    <label>Email <input type="text" name="email" value="{{ email or '' }}" required></label>
+    <label>Пароль <input type="password" name="password" required></label>
+    <button type="submit">Увійти</button>
+  </form>
+  <p>Немає акаунта? <a href="/register">Зареєструватися як пацієнт</a></p>
+</div>
+{% endblock %}

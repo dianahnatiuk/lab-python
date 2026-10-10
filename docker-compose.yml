@@ -1,33 +1,46 @@
 services:
   db:
-    image: mysql:8.4
+    image: postgres:16
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
-      MYSQL_DATABASE: ${MYSQL_DB:-medlab}
-      MYSQL_USER: ${MYSQL_USER:-medlab}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-medlab}
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+      POSTGRES_USER: ${POSTGRES_USER:-medlab}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-medlab}
+      POSTGRES_DB: ${POSTGRES_DB:-medlab}
     ports:
-      - "${MYSQL_PORT:-3306}:3306"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - mysqldata:/var/lib/mysql
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-medlab}"]
       interval: 5s
       timeout: 5s
-      retries: 20
+      retries: 10
+
+  mongo:
+    image: mongo:7
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongodata:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   api:
     build: .
     env_file: .env
     environment:
-      MYSQL_HOST: db
-      MYSQL_PORT: 3306
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-medlab}:${POSTGRES_PASSWORD:-medlab}@db:5432/${POSTGRES_DB:-medlab}
+      MONGO_URL: mongodb://mongo:27017
     ports:
       - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
+      mongo:
+        condition: service_healthy
 
 volumes:
-  mysqldata:
+  pgdata:
+  mongodata:
