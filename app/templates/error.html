@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Помилка {{ code }}{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Помилка {{ code }}</h2>
+  <p>{{ message }}</p>
+  {% if error_id %}
+  <p>Код помилки для служби підтримки: <strong>{{ error_id }}</strong></p>
+  {% endif %}
+  <p><a href="/">На головну</a></p>
+</div>
+{% endblock %}

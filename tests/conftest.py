@@ -9,6 +9,9 @@ from tests.helpers import auth, login, unique_email
 
 settings = get_settings()
 
+if settings.app_env == "production":
+    raise RuntimeError("Tests must never run against the production environment")
+
 
 @pytest.fixture(scope="session")
 def client():

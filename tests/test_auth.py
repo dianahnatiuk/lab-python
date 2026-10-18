@@ -44,6 +44,7 @@ def _admin_token(client) -> str:
 
 # --- Анонімний доступ ---
 
+
 def test_anonymous_api_returns_401(client):
     assert client.get("/api/v1/users/me").status_code == 401
     assert client.get("/api/v1/admin/users").status_code == 401
@@ -63,6 +64,7 @@ def test_forged_token_rejected(client):
 
 # --- Автентифікація ---
 
+
 def test_login_success_and_me(client):
     user = _register(client)
     token = _token(client, user["email"])
@@ -77,9 +79,7 @@ def test_login_wrong_password_and_unknown_user(client):
     bad_pass = client.post(
         "/api/v1/auth/login", json={"email": user["email"], "password": "WrongPass999"}
     )
-    unknown = client.post(
-        "/api/v1/auth/login", json={"email": _email(), "password": PASSWORD}
-    )
+    unknown = client.post("/api/v1/auth/login", json={"email": _email(), "password": PASSWORD})
     assert bad_pass.status_code == 401
     assert unknown.status_code == 401
 
@@ -103,6 +103,7 @@ def test_register_cannot_choose_role(client):
 
 
 # --- Вертикальне розмежування ---
+
 
 def test_patient_forbidden_on_admin(client):
     token = _token(client, _register(client)["email"])
@@ -129,6 +130,7 @@ def test_admin_access_and_staff_roles(client):
 
 
 # --- Горизонтальне розмежування (IDOR) ---
+
 
 def test_idor_patient_cannot_edit_other_profile(client):
     a = _register(client)

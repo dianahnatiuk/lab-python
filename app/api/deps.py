@@ -37,9 +37,7 @@ def _extract_token(request: Request) -> str | None:
     return None
 
 
-async def get_optional_user(
-    request: Request, db: AsyncSession = Depends(get_db)
-) -> User | None:
+async def get_optional_user(request: Request, db: AsyncSession = Depends(get_db)) -> User | None:
     token = _extract_token(request)
     if not token:
         return None

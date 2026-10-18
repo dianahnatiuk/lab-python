@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    name: Lint (ruff + black)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - run: pip install -r requirements-dev.txt
+      - run: ruff check .
+      - run: black --check .
+
+  test:
+    name: Tests (pytest)
+    runs-on: ubuntu-latest
+    env:
+      # Одноразові дані лише для тимчасових сервісів CI, справжніх секретів тут немає
+      APP_ENV: test
+      DEBUG: "false"
+      POSTGRES_USER: ci_user
+      POSTGRES_PASSWORD: ci_db_password_ephemeral
+      POSTGRES_DB: medlab_ci
+      POSTGRES_HOST: localhost
+      POSTGRES_PORT: "5432"
+      MONGO_USER: ci_user
+      MONGO_PASSWORD: ci_mongo_password_ephemeral
+      MONGO_DB: medlab_ci
+      MONGO_HOST: localhost
+      MONGO_PORT: "27017"
+      ADMIN_EMAIL: admin@medlab.com
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci_user
+          POSTGRES_PASSWORD: ci_db_password_ephemeral
+          POSTGRES_DB: medlab_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci_user -d medlab_ci"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      mongo:
+        image: mongo:7
+        env:
+          MONGO_INITDB_ROOT_USERNAME: ci_user
+          MONGO_INITDB_ROOT_PASSWORD: ci_mongo_password_ephemeral
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.adminCommand({ping:1})'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements*.txt
+      - run: pip install -r requirements-dev.txt
+      - name: Generate throwaway secrets
+        run: |
+          echo "JWT_SECRET=$(openssl rand -hex 32)" >> "$GITHUB_ENV"
+          echo "ADMIN_PASSWORD=$(openssl rand -hex 12)" >> "$GITHUB_ENV"
+      - run: pytest -v
+
+  docker-build:
+    name: Docker image builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t medlab-api:ci .

@@ -20,12 +20,11 @@ router = APIRouter(include_in_schema=False)
 
 
 def _page(request: Request, name: str, user: User, status_code: int = 200, **ctx):
-    return templates.TemplateResponse(
-        request, name, {"user": user, **ctx}, status_code=status_code
-    )
+    return templates.TemplateResponse(request, name, {"user": user, **ctx}, status_code=status_code)
 
 
 # --- Рецепція ---
+
 
 @router.get("/reception")
 async def reception_page(
@@ -69,6 +68,7 @@ async def reception_create_order(
 
 # --- Забір матеріалу ---
 
+
 @router.get("/nurse")
 async def nurse_page(
     request: Request,
@@ -90,6 +90,7 @@ async def nurse_collect(
 
 
 # --- Лабораторія ---
+
 
 @router.get("/lab")
 async def lab_page(
@@ -147,13 +148,20 @@ async def lab_results_submit(
         await svc.complete_order(db, order_id, user, values, str(form.get("conclusion", "")))
     except InvalidInputError as exc:
         return _page(
-            request, "lab_results.html", user, status_code=422,
-            order=order, catalog=CATALOG, form=dict(form), error=exc.detail,
+            request,
+            "lab_results.html",
+            user,
+            status_code=422,
+            order=order,
+            catalog=CATALOG,
+            form=dict(form),
+            error=exc.detail,
         )
     return RedirectResponse("/lab", status_code=303)
 
 
 # --- Пацієнт ---
+
 
 @router.get("/patient")
 async def patient_page(

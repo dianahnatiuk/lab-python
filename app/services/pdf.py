@@ -107,14 +107,16 @@ def build_pdf(order: Order, results: dict) -> bytes:
         ]
     story += [
         Spacer(1, 10 * mm),
-        Paragraph(
-            "Документ сформовано автоматично. Інтерпретацію результатів надає лікар.", small
-        ),
+        Paragraph("Документ сформовано автоматично. Інтерпретацію результатів надає лікар.", small),
     ]
 
     buffer = BytesIO()
     SimpleDocTemplate(
-        buffer, pagesize=A4, leftMargin=20 * mm, rightMargin=20 * mm, topMargin=20 * mm,
+        buffer,
+        pagesize=A4,
+        leftMargin=20 * mm,
+        rightMargin=20 * mm,
+        topMargin=20 * mm,
         title=f"Результати аналізів {order.barcode}",
     ).build(story)
     return buffer.getvalue()

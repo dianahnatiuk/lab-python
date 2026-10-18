@@ -60,7 +60,10 @@ def test_full_workflow_and_pdf(client, staff):
 
     detail = client.get(f"/api/v1/orders/{oid}", headers=auth(p["token"])).json()
     assert [h["to_status"] for h in detail["history"]] == [
-        "registered", "collected", "in_lab", "completed",
+        "registered",
+        "collected",
+        "in_lab",
+        "completed",
     ]
 
     pdf = client.get(f"/api/v1/orders/{oid}/pdf", headers=auth(p["token"]))
@@ -128,7 +131,9 @@ def test_results_validation(client, staff):
     _post(client, staff["lab_tech"], f"{oid}/receive")
     missing = _post(client, staff["lab_tech"], f"{oid}/results", json={"values": {"HGB": 130}})
     extra = _post(
-        client, staff["lab_tech"], f"{oid}/results",
+        client,
+        staff["lab_tech"],
+        f"{oid}/results",
         json={"values": {"HGB": 130, "GLU": 5, "TSH": 1}},
     )
     assert missing.status_code == 422

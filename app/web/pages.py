@@ -27,6 +27,7 @@ HOME = {
     Role.ADMIN.value: "/admin",
 }
 
+
 def _login_redirect(user: User) -> RedirectResponse:
     response = RedirectResponse(HOME[user.role], status_code=303)
     set_auth_cookie(response, create_access_token(user.id, user.role))

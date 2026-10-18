@@ -32,6 +32,7 @@ TIMESTAMP_FIELD = {
 
 # --- Пацієнти ---
 
+
 async def create_patient(
     db: AsyncSession, full_name: str, birth_date: date | None, phone: str | None
 ) -> Patient:
@@ -48,6 +49,7 @@ async def get_patient_for_user(db: AsyncSession, user: User) -> Patient | None:
 
 
 # --- Створення та читання замовлень ---
+
 
 def _new_barcode() -> str:
     return f"ML-{datetime.now(UTC):%y%m%d}-{secrets.token_hex(3).upper()}"
@@ -126,11 +128,10 @@ async def get_history(db: AsyncSession, order_id: int) -> list[dict]:
 
 # --- Переходи статусів ---
 
+
 async def _lock_order(db: AsyncSession, order_id: int) -> Order:
     # FOR UPDATE: два одночасні запити не зможуть виконати один перехід двічі
-    order = await db.scalar(
-        select(Order).where(Order.id == order_id).with_for_update(of=Order)
-    )
+    order = await db.scalar(select(Order).where(Order.id == order_id).with_for_update(of=Order))
     if order is None:
         raise NotFoundError("Order not found")
     return order
@@ -138,9 +139,7 @@ async def _lock_order(db: AsyncSession, order_id: int) -> Order:
 
 def _advance(db: AsyncSession, order: Order, expected: OrderStatus, user: User) -> None:
     if order.status != expected.value:
-        raise InvalidTransitionError(
-            f"Order is '{order.status}', expected '{expected.value}'"
-        )
+        raise InvalidTransitionError(f"Order is '{order.status}', expected '{expected.value}'")
     target = TRANSITIONS[expected]
     order.status = target.value
     setattr(order, TIMESTAMP_FIELD[target], datetime.now(UTC))

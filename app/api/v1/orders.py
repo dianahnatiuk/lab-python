@@ -26,9 +26,7 @@ from app.services.results import get_results
 router = APIRouter(tags=["lab"])
 
 
-@router.get(
-    "/catalog", response_model=list[TestInfo], dependencies=[Depends(get_current_user)]
-)
+@router.get("/catalog", response_model=list[TestInfo], dependencies=[Depends(get_current_user)])
 async def catalog():
     return [{"code": code, **spec} for code, spec in CATALOG.items()]
 
