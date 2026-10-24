@@ -1,27 +1,51 @@
 {% extends "base.html" %}
-{% block title %}Адмін-панель{% endblock %}
+{% block title %}Адмін-панель &middot; MedLab{% endblock %}
 {% block content %}
+{% from "_macros.html" import role_badge %}
+<div class="page-head">
+  <h1>Адмін-панель</h1>
+  <p>Керування користувачами системи.</p>
+</div>
+<div class="stats">
+  <div class="stat"><div class="num">{{ users | length }}</div><div class="lbl">Користувачів</div></div>
+  <div class="stat">
+    <div class="num">{{ users | rejectattr("role", "equalto", "patient") | list | length }}</div>
+    <div class="lbl">Працівників</div>
+  </div>
+  <div class="stat">
+    <div class="num">{{ users | selectattr("role", "equalto", "patient") | list | length }}</div>
+    <div class="lbl">Пацієнтів</div>
+  </div>
+</div>
 <div class="card">
-  <h2>Адмін-панель</h2>
-  {% if error %}<div class="error">{{ error }}</div>{% endif %}
-  <h3>Створити працівника</h3>
+  <h2>Створити працівника</h2>
+  <p class="sub">Оберіть роль уважно: від неї залежить, що бачитиме користувач.</p>
+  {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
   <form method="post" action="/admin/users">
-    <label>ПІБ <input type="text" name="full_name" required minlength="2"></label>
-    <label>Email <input type="email" name="email" required></label>
-    <label>Пароль <input type="password" name="password" required minlength="8"></label>
-    <label>Роль
-      <select name="role">
-        {% for r in roles %}<option value="{{ r.value }}">{{ r.value }}</option>{% endfor %}
-      </select>
-    </label>
-    <button type="submit">Створити</button>
+    <div class="grid-2">
+      <label class="field"><span>ПІБ</span><input type="text" name="full_name" required minlength="2"></label>
+      <label class="field"><span>Email</span><input type="email" name="email" required></label>
+      <label class="field"><span>Пароль</span><input type="password" name="password" required minlength="8" autocomplete="new-password"></label>
+      <label class="field"><span>Роль</span>
+        <select name="role">
+          {% for r in roles %}<option value="{{ r.value }}">{{ r.value | role_label }}</option>{% endfor %}
+        </select>
+      </label>
+    </div>
+    <div class="form-actions"><button class="btn btn-primary" type="submit">Створити</button></div>
   </form>
-  <h3>Користувачі</h3>
-  <table>
-    <tr><th>ID</th><th>ПІБ</th><th>Email</th><th>Роль</th></tr>
-    {% for u in users %}
-    <tr><td>{{ u.id }}</td><td>{{ u.full_name }}</td><td>{{ u.email }}</td><td>{{ u.role }}</td></tr>
-    {% endfor %}
-  </table>
+</div>
+<div class="card section">
+  <h2>Користувачі</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>ID</th><th>ПІБ</th><th>Email</th><th>Роль</th></tr></thead>
+      <tbody>
+        {% for u in users %}
+        <tr><td>{{ u.id }}</td><td>{{ u.full_name }}</td><td>{{ u.email }}</td><td>{{ role_badge(u.role) }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endblock %}

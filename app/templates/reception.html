@@ -1,35 +1,48 @@
 {% extends "base.html" %}
-{% block title %}Рецепція{% endblock %}
+{% block title %}Рецепція &middot; MedLab{% endblock %}
 {% block content %}
-<div class="card">
-  <h2>Рецепція</h2>
-  <h3>Новий пацієнт (без особистого кабінету)</h3>
-  <form method="post" action="/reception/patients">
-    <label>ПІБ <input type="text" name="full_name" required minlength="2"></label>
-    <label>Дата народження <input type="date" name="birth_date"></label>
-    <label>Телефон <input type="text" name="phone"></label>
-    <button type="submit">Додати пацієнта</button>
-  </form>
+<div class="page-head">
+  <h1>Рецепція</h1>
+  <p>Реєстрація пацієнтів і створення замовлень на аналізи.</p>
 </div>
-<div class="card">
-  <h3>Нове замовлення на аналізи</h3>
-  <form method="post" action="/reception/orders">
-    <label>Пацієнт
-      <select name="patient_id" required>
-        {% for p in patients %}
-        <option value="{{ p.id }}">{{ p.full_name }}{% if p.birth_date %} ({{ p.birth_date }}){% endif %}</option>
-        {% endfor %}
-      </select>
-    </label>
-    <p>Аналізи:</p>
-    {% for code, t in catalog.items() %}
-    <label><input type="checkbox" name="test_codes" value="{{ code }}" style="width:auto"> {{ t.name }} ({{ t.unit }})</label>
-    {% endfor %}
-    <button type="submit">Створити замовлення</button>
-  </form>
+<div class="grid-2">
+  <div class="card">
+    <h2>Новий пацієнт</h2>
+    <p class="sub">Для пацієнтів без особистого кабінету.</p>
+    <form method="post" action="/reception/patients">
+      <label class="field"><span>ПІБ</span><input type="text" name="full_name" required minlength="2"></label>
+      <label class="field"><span>Дата народження</span><input type="date" name="birth_date"></label>
+      <label class="field"><span>Телефон</span><input type="text" name="phone"></label>
+      <div class="form-actions"><button class="btn btn-primary" type="submit">Додати пацієнта</button></div>
+    </form>
+  </div>
+  <div class="card">
+    <h2>Нове замовлення</h2>
+    <p class="sub">Оберіть пацієнта та потрібні аналізи.</p>
+    <form method="post" action="/reception/orders">
+      <label class="field"><span>Пацієнт</span>
+        <select name="patient_id" required>
+          {% for p in patients %}
+          <option value="{{ p.id }}">{{ p.full_name }}{% if p.birth_date %} ({{ p.birth_date.strftime("%d.%m.%Y") }}){% endif %}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <div class="field"><span>Аналізи</span>
+        <div class="chips">
+          {% for code, t in catalog.items() %}
+          <label class="chip">
+            <input type="checkbox" name="test_codes" value="{{ code }}">
+            <span><strong>{{ t.name }}</strong><small>{{ t.unit }}</small></span>
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="form-actions"><button class="btn btn-primary" type="submit">Створити замовлення</button></div>
+    </form>
+  </div>
 </div>
-<div class="card">
-  <h3>Останні замовлення</h3>
+<div class="card section">
+  <h2>Останні замовлення</h2>
   {% include "_orders_table.html" %}
 </div>
 {% endblock %}

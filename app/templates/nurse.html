@@ -1,20 +1,28 @@
 {% extends "base.html" %}
-{% block title %}Забір матеріалу{% endblock %}
+{% block title %}Забір матеріалу &middot; MedLab{% endblock %}
 {% block content %}
+<div class="page-head">
+  <h1>Процедурний кабінет</h1>
+  <p>Замовлення, що очікують на забір біоматеріалу: <strong>{{ orders | length }}</strong></p>
+</div>
 <div class="card">
-  <h2>Процедурний кабінет</h2>
-  <p>Замовлення, що чекають на забір біоматеріалу:</p>
-  <table>
-    <tr><th>№</th><th>Штрихкод</th><th>Пацієнт</th><th>Аналізи</th><th></th></tr>
-    {% for o in orders %}
-    <tr>
-      <td>{{ o.id }}</td><td>{{ o.barcode }}</td><td>{{ o.patient_name }}</td>
-      <td>{{ o.test_codes | join(", ") }}</td>
-      <td><form method="post" action="/nurse/orders/{{ o.id }}/collect"><button type="submit">Матеріал забрано</button></form></td>
-    </tr>
-    {% else %}
-    <tr><td colspan="5">Немає замовлень, що чекають на забір</td></tr>
-    {% endfor %}
-  </table>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>№</th><th>Штрихкод</th><th>Пацієнт</th><th>Аналізи</th><th></th></tr></thead>
+      <tbody>
+        {% for o in orders %}
+        <tr>
+          <td>{{ o.id }}</td>
+          <td>{{ o.barcode }}</td>
+          <td>{{ o.patient_name }}</td>
+          <td><div class="tags">{% for c in o.test_codes %}<span class="tag" title="{{ c | test_name }}">{{ c }}</span>{% endfor %}</div></td>
+          <td><form method="post" action="/nurse/orders/{{ o.id }}/collect"><button class="btn btn-primary btn-sm" type="submit">Матеріал забрано</button></form></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="empty">Немає замовлень, що очікують на забір</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 {% endblock %}

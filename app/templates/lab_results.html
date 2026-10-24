@@ -1,22 +1,30 @@
 {% extends "base.html" %}
-{% block title %}Внесення результатів{% endblock %}
+{% block title %}Внесення результатів &middot; MedLab{% endblock %}
 {% block content %}
+<div class="page-head">
+  <h1>Результати: замовлення №{{ order.id }}</h1>
+  <p>Пацієнт: <strong>{{ order.patient_name }}</strong> &middot; штрихкод {{ order.barcode }}</p>
+</div>
 <div class="card">
-  <h2>Результати: замовлення №{{ order.id }}</h2>
-  <p>Пацієнт: {{ order.patient_name }}. Штрихкод: {{ order.barcode }}</p>
-  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+  {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
   <form method="post" action="/lab/orders/{{ order.id }}/results">
     {% for code in order.test_codes %}
     {% set t = catalog[code] %}
-    <label>{{ t.name }}, {{ t.unit }} (норма {{ t.ref_min }} – {{ t.ref_max }})
-      <input type="text" name="value_{{ code }}" value="{{ form.get('value_' ~ code, '') }}" required inputmode="decimal">
-    </label>
+    <div class="result-row">
+      <div><strong>{{ t.name }}</strong><small>Норма: {{ t.ref_min }} &ndash; {{ t.ref_max }} {{ t.unit }}</small></div>
+      <div class="input-unit">
+        <input type="text" name="value_{{ code }}" value="{{ form.get('value_' ~ code, '') }}" required inputmode="decimal" placeholder="0.0">
+        <span>{{ t.unit }}</span>
+      </div>
+    </div>
     {% endfor %}
-    <label>Висновок (необов'язково)
-      <input type="text" name="conclusion" value="{{ form.get('conclusion', '') }}" maxlength="2000">
+    <label class="field"><span>Висновок (необов'язково)</span>
+      <textarea name="conclusion" rows="3" maxlength="2000">{{ form.get('conclusion', '') }}</textarea>
     </label>
-    <button type="submit">Зберегти й завершити</button>
+    <div class="form-actions row-between">
+      <a href="/lab">&larr; Назад</a>
+      <button class="btn btn-primary" type="submit">Зберегти й завершити</button>
+    </div>
   </form>
-  <p><a href="/lab">← Назад</a></p>
 </div>
 {% endblock %}

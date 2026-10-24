@@ -5,32 +5,207 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}MedLab{% endblock %}</title>
   <style>
-    body { font-family: system-ui, sans-serif; margin: 0; background: #f4f6f8; color: #1d2733; }
-    header { background: #0b5ed7; color: #fff; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; }
-    header form { margin: 0; }
-    main { max-width: 900px; margin: 32px auto; padding: 0 16px; }
-    .card { background: #fff; padding: 24px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,.1); }
-    .card + .card { margin-top: 16px; }
-    table button { margin: 0; padding: 4px 10px; }
-    label { display: block; margin-top: 12px; font-size: 14px; }
-    input, select { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; }
-    button { margin-top: 16px; padding: 8px 16px; background: #0b5ed7; color: #fff; border: 0; border-radius: 4px; cursor: pointer; }
-    header button { margin: 0; background: #fff; color: #0b5ed7; }
-    .error { background: #fdecea; color: #b3261e; padding: 8px 12px; border-radius: 4px; margin-bottom: 12px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-    th, td { text-align: left; padding: 6px; border-bottom: 1px solid #e3e7eb; font-size: 14px; }
+    :root {
+      --bg: #f1f5f9; --surface: #ffffff; --surface-2: #f8fafc;
+      --text: #0f172a; --muted: #64748b; --border: #e2e8f0;
+      --primary: #0e7490; --primary-hover: #155e75; --primary-soft: #cffafe; --on-primary: #ffffff;
+      --header-from: #155e75; --header-to: #0e7490;
+      --danger: #b91c1c; --danger-soft: #fee2e2;
+      --radius: 14px;
+      --shadow: 0 1px 2px rgba(15, 23, 42, .06), 0 8px 24px rgba(15, 23, 42, .06);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0b1220; --surface: #111a2e; --surface-2: #0e1628;
+        --text: #e5eaf3; --muted: #93a1b8; --border: #22304a;
+        --primary: #22d3ee; --primary-hover: #67e8f9; --primary-soft: #0e3a47; --on-primary: #04222b;
+        --header-from: #0b3b4a; --header-to: #0e5a70;
+        --danger: #fca5a5; --danger-soft: #3b1620;
+        --shadow: none;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--text);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5; min-height: 100vh; display: flex; flex-direction: column;
+    }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    h1, h2, h3 { margin: 0; line-height: 1.25; }
+
+    /* --- шапка --- */
+    .topbar { background: linear-gradient(135deg, var(--header-from), var(--header-to)); color: #fff; }
+    .topbar-inner {
+      max-width: 1100px; margin: 0 auto; padding: 12px 20px;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; color: #fff; font-weight: 700; font-size: 20px; }
+    .brand:hover { text-decoration: none; }
+    .userbox { display: flex; align-items: center; gap: 12px; }
+    .userbox form { margin: 0; }
+    .avatar {
+      width: 36px; height: 36px; border-radius: 50%; background: rgba(255, 255, 255, .22);
+      display: grid; place-items: center; font-weight: 700;
+    }
+    .who { display: flex; flex-direction: column; line-height: 1.2; text-align: right; }
+    .who strong { font-size: 14px; }
+    .who small { opacity: .8; font-size: 12px; }
+
+    /* --- каркас --- */
+    .container { width: 100%; max-width: 1100px; margin: 28px auto; padding: 0 20px; flex: 1; }
+    .footer { text-align: center; color: var(--muted); font-size: 13px; padding: 18px; }
+    .page-head { margin-bottom: 22px; }
+    .page-head h1 { font-size: 28px; }
+    .page-head p { margin: 6px 0 0; color: var(--muted); }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); box-shadow: var(--shadow); padding: 24px;
+    }
+    .card h2 { font-size: 18px; margin-bottom: 4px; }
+    .card .sub { color: var(--muted); font-size: 14px; margin: 0 0 16px; }
+    .section { margin-top: 22px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 22px; }
+    .muted { color: var(--muted); }
+    .row-between { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+    /* --- форми --- */
+    .field { display: block; margin-top: 14px; font-size: 14px; font-weight: 600; }
+    .field > span { display: block; margin-bottom: 6px; }
+    input[type=text], input[type=email], input[type=password], input[type=date], select, textarea {
+      width: 100%; padding: 10px 12px; font: inherit; color: var(--text);
+      background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: 2px solid var(--primary); outline-offset: 1px; background: var(--surface);
+    }
+    textarea { resize: vertical; }
+    .hint { color: var(--muted); font-size: 12px; font-weight: 400; margin-top: 4px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 10px 18px; font: inherit; font-weight: 600; cursor: pointer;
+      border: 1px solid transparent; border-radius: 10px; background: var(--surface-2); color: var(--text);
+    }
+    .btn:hover { text-decoration: none; filter: brightness(.97); }
+    .btn-primary { background: var(--primary); color: var(--on-primary); }
+    .btn-primary:hover { background: var(--primary-hover); filter: none; }
+    .btn-ghost { background: rgba(255, 255, 255, .16); color: #fff; border-color: rgba(255, 255, 255, .35); }
+    .btn-outline { background: transparent; color: var(--primary); border-color: var(--primary); }
+    .btn-sm { padding: 6px 12px; font-size: 14px; }
+    .btn-block { width: 100%; margin-top: 20px; }
+    .form-actions { margin-top: 18px; }
+    .alert { padding: 10px 14px; border-radius: 10px; margin: 0 0 14px; font-size: 14px; }
+    .alert-error { background: var(--danger-soft); color: var(--danger); }
+
+    /* --- таблиці та бейджі --- */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { text-align: left; color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+    tbody tr:hover td, table tr:hover td { background: var(--surface-2); }
+    td form { margin: 0; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+    .badge-registered { background: #e2e8f0; color: #334155; }
+    .badge-collected { background: #fef3c7; color: #92400e; }
+    .badge-in_lab { background: #dbeafe; color: #1e40af; }
+    .badge-completed { background: #dcfce7; color: #166534; }
+    .role-admin { background: #ede9fe; color: #5b21b6; }
+    .role-receptionist { background: #fce7f3; color: #9d174d; }
+    .role-nurse { background: #fef3c7; color: #92400e; }
+    .role-lab_tech { background: #dbeafe; color: #1e40af; }
+    .role-patient { background: #dcfce7; color: #166534; }
+    @media (prefers-color-scheme: dark) {
+      .badge { filter: brightness(.95); }
+    }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag { background: var(--primary-soft); color: var(--primary); padding: 2px 10px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+    .empty { text-align: center; color: var(--muted); padding: 36px 12px; }
+
+    /* --- статистика --- */
+    .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 16px; margin-bottom: 22px; }
+    .stat { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 20px; box-shadow: var(--shadow); }
+    .stat .num { font-size: 30px; font-weight: 700; color: var(--primary); line-height: 1.1; }
+    .stat .lbl { color: var(--muted); font-size: 13px; }
+
+    /* --- замовлення пацієнта --- */
+    .orders { display: grid; gap: 18px; }
+    .order-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px 24px; }
+    .order-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+    .order-head h3 { font-size: 17px; }
+    .order-foot { margin-top: 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .stepper { list-style: none; display: flex; padding: 0; margin: 20px 0 4px; }
+    .stepper li { flex: 1; position: relative; text-align: center; font-size: 12px; color: var(--muted); }
+    .stepper li:not(:first-child)::before {
+      content: ""; position: absolute; top: 13px; right: 50%; width: 100%; height: 3px; background: var(--border);
+    }
+    .stepper li.done::before, .stepper li.current::before { background: var(--primary); }
+    .stepper .dot {
+      position: relative; z-index: 1; display: grid; place-items: center; width: 28px; height: 28px; margin: 0 auto 6px;
+      border-radius: 50%; background: var(--surface); border: 2px solid var(--border); font-weight: 700; font-size: 13px;
+    }
+    .stepper li.done .dot { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }
+    .stepper li.current .dot { border-color: var(--primary); color: var(--primary); }
+    .stepper li.current, .stepper li.done { color: var(--text); }
+
+    /* --- вибір аналізів --- */
+    .chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 8px; }
+    .chip { position: relative; cursor: pointer; }
+    .chip input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+    .chip span {
+      display: flex; flex-direction: column; padding: 10px 12px; border: 1px solid var(--border);
+      border-radius: 10px; background: var(--surface-2); font-size: 14px; line-height: 1.3;
+    }
+    .chip small { color: var(--muted); font-size: 12px; }
+    .chip input:checked + span { border-color: var(--primary); background: var(--primary-soft); box-shadow: 0 0 0 1px var(--primary); }
+    .chip input:focus-visible + span { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+    /* --- внесення результатів --- */
+    .result-row {
+      display: grid; grid-template-columns: 1fr 200px; gap: 16px; align-items: center;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .result-row small { display: block; color: var(--muted); font-size: 12px; }
+    .input-unit { display: flex; align-items: center; gap: 8px; }
+    .input-unit span { color: var(--muted); font-size: 13px; white-space: nowrap; }
+    @media (max-width: 560px) { .result-row { grid-template-columns: 1fr; } }
+
+    /* --- сторінки входу та помилок --- */
+    body.auth .topbar { display: none; }
+    body.auth .container { display: grid; place-items: center; margin: 0 auto; }
+    .auth-card {
+      width: 100%; max-width: 420px; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; box-shadow: var(--shadow); padding: 34px 32px;
+    }
+    .auth-brand { text-align: center; margin-bottom: 8px; color: var(--primary); }
+    .auth-brand h1 { font-size: 26px; margin-top: 6px; color: var(--text); }
+    .auth-brand p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+    .auth-foot { text-align: center; margin: 20px 0 0; font-size: 14px; color: var(--muted); }
+    .error-page { text-align: center; padding: 40px 24px; }
+    .error-code { font-size: 72px; font-weight: 800; color: var(--primary); line-height: 1; }
+    @media (max-width: 640px) {
+      .who { display: none; }
+      .page-head h1 { font-size: 23px; }
+      .card { padding: 18px; }
+    }
   </style>
 </head>
-<body>
-  <header>
-    <strong>MedLab</strong>
-    {% if user %}
-    <form method="post" action="/logout">
-      <span>{{ user.full_name }} ({{ user.role }})</span>
-      <button type="submit">Вийти</button>
-    </form>
-    {% endif %}
+<body class="{% block body_class %}{% endblock %}">
+  {% block header %}
+  {% from "_macros.html" import logo %}
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="/">{{ logo(30) }} MedLab</a>
+      {% if user %}
+      <div class="userbox">
+        <span class="avatar">{{ user.full_name[:1] | upper }}</span>
+        <div class="who"><strong>{{ user.full_name }}</strong><small>{{ user.role | role_label }}</small></div>
+        <form method="post" action="/logout"><button class="btn btn-ghost btn-sm" type="submit">Вийти</button></form>
+      </div>
+      {% endif %}
+    </div>
   </header>
-  <main>{% block content %}{% endblock %}</main>
+  {% endblock %}
+  <main class="container">{% block content %}{% endblock %}</main>
+  <footer class="footer">MedLab Aggregator &middot; результати аналізів онлайн</footer>
 </body>
 </html>

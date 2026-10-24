@@ -1,0 +1,29 @@
+{% macro logo(size=32) -%}
+<svg width="{{ size }}" height="{{ size }}" viewBox="0 0 32 32" aria-hidden="true">
+  <rect width="32" height="32" rx="9" fill="currentColor" opacity=".18"/>
+  <path d="M13 6h6v7h7v6h-7v7h-6v-7H6v-6h7z" fill="currentColor"/>
+</svg>
+{%- endmacro %}
+
+{% macro badge(status) -%}
+<span class="badge badge-{{ status }}">{{ status | status_label }}</span>
+{%- endmacro %}
+
+{% macro role_badge(role) -%}
+<span class="badge role-{{ role }}">{{ role | role_label }}</span>
+{%- endmacro %}
+
+{% macro stepper(status) -%}
+{% set keys = ["registered", "collected", "in_lab", "completed"] %}
+{% set labels = ["Реєстрація", "Забір", "Лабораторія", "Результат"] %}
+{% set current = keys.index(status) if status in keys else 0 %}
+<ol class="stepper">
+  {% for label in labels %}
+  {% set idx = loop.index0 %}
+  <li class="{% if idx < current or status == 'completed' %}done{% elif idx == current %}current{% endif %}">
+    <span class="dot">{% if idx < current or status == 'completed' %}&#10003;{% else %}{{ loop.index }}{% endif %}</span>
+    <span class="step-label">{{ label }}</span>
+  </li>
+  {% endfor %}
+</ol>
+{%- endmacro %}

@@ -1,9 +1,40 @@
 {% extends "base.html" %}
-{% block title %}Кабінет пацієнта{% endblock %}
+{% block title %}Кабінет пацієнта &middot; MedLab{% endblock %}
 {% block content %}
-<div class="card">
-  <h2>Кабінет пацієнта</h2>
-  <p>Вітаємо, {{ user.full_name }}! Тут ваші замовлення. Коли результат готовий, з'явиться посилання на PDF.</p>
-  {% include "_orders_table.html" %}
+{% from "_macros.html" import badge, stepper %}
+{% set total = orders | length %}
+{% set ready = orders | selectattr("status", "equalto", "completed") | list | length %}
+<div class="page-head">
+  <h1>Кабінет пацієнта</h1>
+  <p>Вітаємо, {{ user.full_name }}! Тут ви бачите стан своїх аналізів і можете завантажити готові результати.</p>
+</div>
+<div class="stats">
+  <div class="stat"><div class="num">{{ total }}</div><div class="lbl">Усього замовлень</div></div>
+  <div class="stat"><div class="num">{{ total - ready }}</div><div class="lbl">В обробці</div></div>
+  <div class="stat"><div class="num">{{ ready }}</div><div class="lbl">Результатів готово</div></div>
+</div>
+<div class="orders">
+  {% for o in orders %}
+  <article class="order-card">
+    <div class="order-head">
+      <div>
+        <h3>Замовлення №{{ o.id }}</h3>
+        <span class="muted">{{ o.barcode }} &middot; {{ o.created_at.strftime("%d.%m.%Y %H:%M") }}</span>
+      </div>
+      {{ badge(o.status) }}
+    </div>
+    <div class="tags">{% for c in o.test_codes %}<span class="tag">{{ c | test_name }}</span>{% endfor %}</div>
+    {{ stepper(o.status) }}
+    <div class="order-foot">
+      {% if o.status == "completed" %}
+      <a class="btn btn-primary" href="/api/v1/orders/{{ o.id }}/pdf" target="_blank" rel="noopener">Завантажити PDF</a>
+      {% else %}
+      <span class="muted">Результат з'явиться тут одразу після завершення аналізів.</span>
+      {% endif %}
+    </div>
+  </article>
+  {% else %}
+  <div class="card empty">Замовлень поки немає. Зверніться на рецепцію лабораторії, щоб оформити аналізи.</div>
+  {% endfor %}
 </div>
 {% endblock %}
